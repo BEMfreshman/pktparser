@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'pktparser'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=pktparser",
+                    "--package=pktparser"
+                ],
+                "filter": {
+                    "name": "pktparser",
+                    "kind": "bin"
+                }
+            },
+            "args": [
+                "F:/MyWorkSpace2/RustTrial/project/pktparser/test.pcap"
+            ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'pktparser'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=pktparser",
+                    "--package=pktparser"
+                ],
+                "filter": {
+                    "name": "pktparser",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

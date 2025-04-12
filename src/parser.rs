@@ -57,8 +57,8 @@ use std::io::Bytes;
 
 pub fn parse(input: &[u8]) -> IResult<&[u8],KospiFormat> {
 
-    // let start_label = "b6034";
-    // let (input, _) = tag(start_label)(input)?;
+    //  let start_label = "b6034";
+    //  let (input, _) = tag(start_label)(input)?;
     let (input,_) = take(5usize)(input)?;
     let (input, issue_code) = read_string(input, 12)?;
     let (input,_) = take(12usize)(input)?;

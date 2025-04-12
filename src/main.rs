@@ -1,9 +1,11 @@
 pub mod parser;
 
 use clap::Parser;
+use nom::bytes::complete::tag;
+use nom::error::Error;
+use nom::character::complete::char;
 use parser::parse;
-use std::{fs::File, io::Read};
-use pcap_file::pcap::PcapReader;
+use pcap::Capture;
 
 #[derive(Parser)]
 #[command(version = "0.1")]
@@ -17,7 +19,6 @@ struct Cli {
     reorder: bool,
 }
 
-use nom::bytes::complete::take;
 fn main() {
     let cli = Cli::parse();
     let file_name = cli.file_name;
@@ -25,21 +26,39 @@ fn main() {
     parse_pcap_file(&file_name);
 }
 
-fn parse_pcap_file(file_name: &String) -> () {
+fn parse_pcap_file(file_name: &String) {
 
-    let file_in = File::open(file_name).expect("Error opening");
-    let mut pcap_reader = PcapReader::new(file_in).unwrap();
+    let mut cap = Capture::from_file(file_name).expect("Failed to open pcap file");
+    while let Ok(packet) = cap.next_packet() {
 
-    while let Some(pkt) = pcap_reader.next_packet() {
-        let pkt = pkt.unwrap();
-        
-        match parse(&pkt.data) {
-            Ok((_, kospi_info)) => {
-                kospi_info.print();
+        // For test
+        // let data = [
+        //     b'b', b'6', b'0', b'3', b'4', b'a', 10, 20, 0, 0, 0, 30, 0, 0, 0, 40,
+        // ];
+        //let n = match_tag_label(&data);
+
+        if match_tag_label(&packet.data) {
+            match parse(&packet.data) {
+                Ok((_,kospi_info)) => {
+                    kospi_info.print();
+                }
+                Err(error) => {
+                    println!("{:?}", error);
+                }
             }
-            Err(err) => {
-                println!("{:?}", err);
-            }
+        } else {
+            continue;
+        }
+    }
+}
+
+fn match_tag_label(input: &[u8]) -> bool {
+    match tag::<_, _, Error<_>>(b"b6034")(input) {
+        Ok((_, _)) => {
+            true
+        }
+        Err(_) => {
+            false
         }
     }
 }
