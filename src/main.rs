@@ -1,9 +1,8 @@
 pub mod parser;
 
 use clap::Parser;
-use nom::bytes::complete::tag;
+use nom::bytes::complete::take_until;
 use nom::error::Error;
-use nom::character::complete::char;
 use parser::parse;
 use pcap::Capture;
 
@@ -31,14 +30,8 @@ fn parse_pcap_file(file_name: &String) {
     let mut cap = Capture::from_file(file_name).expect("Failed to open pcap file");
     while let Ok(packet) = cap.next_packet() {
 
-        // For test
-        // let data = [
-        //     b'b', b'6', b'0', b'3', b'4', b'a', 10, 20, 0, 0, 0, 30, 0, 0, 0, 40,
-        // ];
-        //let n = match_tag_label(&data);
-
-        if match_tag_label(&packet.data) {
-            match parse(&packet.data) {
+        if let Ok((_,input)) = take_until::<_, _, Error<_>>(b"B6034".as_slice())(packet.data){
+            match parse(input) {
                 Ok((_,kospi_info)) => {
                     kospi_info.print();
                 }
@@ -46,19 +39,6 @@ fn parse_pcap_file(file_name: &String) {
                     println!("{:?}", error);
                 }
             }
-        } else {
-            continue;
-        }
-    }
-}
-
-fn match_tag_label(input: &[u8]) -> bool {
-    match tag::<_, _, Error<_>>(b"b6034")(input) {
-        Ok((_, _)) => {
-            true
-        }
-        Err(_) => {
-            false
         }
     }
 }

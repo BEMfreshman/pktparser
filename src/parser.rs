@@ -50,10 +50,9 @@ pub struct PktTime {
     micro: u32,
 }
 
-use nom::bytes::complete::{tag, take};
+use nom::bytes::complete::take;
 use nom::number::complete::{u8, le_u32};
 use nom::IResult;
-use std::io::Bytes;
 
 pub fn parse(input: &[u8]) -> IResult<&[u8],KospiFormat> {
 
