@@ -6,4 +6,4 @@ edition = "2024"
 [dependencies]
 clap = { version = "4.5.35", features = ["derive"] }
 nom = "7"
-pcap = "2.2.0"
+pcap-file = "2.0.0"

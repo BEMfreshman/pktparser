@@ -53,46 +53,47 @@ pub struct PktTime {
 use nom::bytes::complete::take;
 use nom::number::complete::{u8, le_u32};
 use nom::IResult;
+use nom::number::Endianness;
 
-pub fn parse(input: &[u8]) -> IResult<&[u8],KospiFormat> {
+use crate::decode;
 
-    //  let start_label = "b6034";
-    //  let (input, _) = tag(start_label)(input)?;
+pub fn parse(endianness:Endianness, input: &[u8]) -> IResult<&[u8],KospiFormat> {
+
     let (input,_) = take(5usize)(input)?;
     let (input, issue_code) = read_string(input, 12)?;
     let (input,_) = take(12usize)(input)?;
 
-    let(input, best_bid_price_1st) = read_price(input)?;
-    let(input,best_bid_quantity_1st) = read_quantity(input)?;
+    let(input, best_bid_price_1st) = read_price(endianness,input)?;
+    let(input,best_bid_quantity_1st) = read_quantity(endianness,input)?;
 
-    let(input, best_bid_price_2nd) = read_price(input)?;
-    let(input,best_bid_quantity_2nd) = read_quantity(input)?;
+    let(input, best_bid_price_2nd) = read_price(endianness, input)?;
+    let(input,best_bid_quantity_2nd) = read_quantity(endianness,input)?;
 
-    let(input, best_bid_price_3rd) = read_price(input)?;
-    let(input,best_bid_quantity_3rd) = read_quantity(input)?;
+    let(input, best_bid_price_3rd) = read_price(endianness,input)?;
+    let(input,best_bid_quantity_3rd) = read_quantity(endianness,input)?;
 
-    let(input, best_bid_price_4th) = read_price(input)?;
-    let(input,best_bid_quantity_4th) = read_quantity(input)?;
+    let(input, best_bid_price_4th) = read_price(endianness, input)?;
+    let(input,best_bid_quantity_4th) = read_quantity(endianness,input)?;
 
-    let(input, best_bid_price_5th) = read_price(input)?;
-    let(input,best_bid_quantity_5th) = read_quantity(input)?;
+    let(input, best_bid_price_5th) = read_price(endianness,input)?;
+    let(input,best_bid_quantity_5th) = read_quantity(endianness,input)?;
 
     let(input,_) = take(7usize)(input)?;  // skip total ask quote volume
 
-    let(input, best_ask_price_1st) = read_price(input)?;
-    let(input,best_ask_quantity_1st) = read_quantity(input)?;
+    let(input, best_ask_price_1st) = read_price(endianness,input)?;
+    let(input,best_ask_quantity_1st) = read_quantity(endianness,input)?;
 
-    let(input, best_ask_price_2nd) = read_price(input)?;
-    let(input,best_ask_quantity_2nd) = read_quantity(input)?;
+    let(input, best_ask_price_2nd) = read_price(endianness,    input)?;
+    let(input,best_ask_quantity_2nd) = read_quantity(endianness,input)?;
 
-    let(input, best_ask_price_3rd) = read_price(input)?;
-    let(input, best_ask_quantity_3rd) = read_quantity(input)?;
+    let(input, best_ask_price_3rd) = read_price(endianness,input)?;
+    let(input, best_ask_quantity_3rd) = read_quantity(endianness,input)?;
 
-    let(input, best_ask_price_4th) = read_price(input)?;
-    let(input,best_ask_quantity_4th) = read_quantity(input)?;
+    let(input, best_ask_price_4th) = read_price(endianness,input)?;
+    let(input,best_ask_quantity_4th) = read_quantity(endianness,input)?;
 
-    let(input, best_ask_price_5th) = read_price(input)?;
-    let(input,best_ask_quantity_5th) = read_quantity(input)?;
+    let(input, best_ask_price_5th) = read_price(endianness,input)?;
+    let(input,best_ask_quantity_5th) = read_quantity(endianness,input)?;
 
     let(input,_) = take(30usize)(input)?; // skip 30 bytes
 
@@ -132,15 +133,16 @@ fn read_string(input:&[u8], n_bytes: u8) -> IResult<&[u8], String> {
     Ok((input, string))
 }
 
-fn read_price(input: &[u8]) -> IResult<&[u8], f64> {
+fn read_price(endianness:Endianness, input: &[u8]) -> IResult<&[u8], f64> 
+{
     let(input,data_bytes) = take(5usize)(input)?;
-    let data = f64::from_be_bytes(data_bytes.try_into().unwrap());
+    let data = decode::f64_5(endianness, data_bytes);
     Ok((input, data))
 }
 
-fn read_quantity(input: &[u8]) -> IResult<&[u8],u64> {
+fn read_quantity(endianness:Endianness, input: &[u8]) -> IResult<&[u8],u64> {
     let(input, data_bytes) = take(7usize)(input)?;
-    let data = u64::from_le_bytes(data_bytes.try_into().unwrap());
+    let data = decode::u64_7(endianness, data_bytes);
     Ok((input,data))
 }
 

@@ -21,7 +21,7 @@
                 }
             },
             "args": [
-                "F:/MyWorkSpace2/RustTrial/project/pktparser/test.pcap"
+                "test.pcap"
             ],
             "cwd": "${workspaceFolder}"
         },
