@@ -1,5 +1,4 @@
 pub mod parser;
-pub mod decode;
 
 use clap::Parser;
 use nom::bytes::complete::take_until;
@@ -8,7 +7,6 @@ use nom::AsBytes;
 use parser::parse;
 use std::fs::File;
 use pcap_file::pcap::PcapReader;
-use pcap_file::Endianness;
 
 #[derive(Parser)]
 #[command(version = "0.1")]
@@ -34,16 +32,10 @@ fn parse_pcap_file(file_name: &String) {
     let file_in = File::open(file_name).expect("Error opening file");
     let mut pcap_reader = PcapReader::new(file_in).unwrap();
 
-    let header = pcap_reader.header();
-    let mut parse_endianness = nom::number::Endianness::Big;
-    if Endianness::is_little(header.endianness) {
-        parse_endianness = nom::number::Endianness::Little;
-    }
-
     while let Some(pkt) = pcap_reader.next_packet() {
         let input = pkt.unwrap().data;
-        if let Ok((_,input)) = take_until::<_, _, Error<_>>(b"B6034".as_slice())(input.as_bytes()) {
-            match parse(parse_endianness,input) {
+        if let Ok((input,_)) = take_until::<_, _, Error<_>>(b"B6034".as_slice())(input.as_bytes()) {
+            match parse(input) {
                 Ok((_,kospi_info)) => {
                     kospi_info.print();
                 }
@@ -53,4 +45,6 @@ fn parse_pcap_file(file_name: &String) {
             }
         }
     }
+
+    println!("OK!!!!!")
 }
